@@ -3,10 +3,11 @@ package com.mpb.wishlist.domain.model
 import com.mpb.wishlist.exception.LimitExceededException
 import spock.lang.Specification
 
-class WishlistSpec extends Specification {
+import static com.mpb.wishlist.support.WishlistTestConstants.CUSTOMER_ID
+import static com.mpb.wishlist.support.WishlistTestConstants.OTHER_PRODUCT_ID
+import static com.mpb.wishlist.support.WishlistTestConstants.PRODUCT_ID
 
-    private static final String CUSTOMER_ID = "customer-1"
-    private static final String PRODUCT_ID = "product-1"
+class WishlistSpec extends Specification {
 
     def "should add product when wishlist is not full"() {
         given:
@@ -69,12 +70,29 @@ class WishlistSpec extends Specification {
         given:
             def wishlist = new Wishlist(CUSTOMER_ID)
             wishlist.addProduct(PRODUCT_ID)
-            def anotherProduct = "product-2"
         when:
-            def removed = wishlist.removeProduct(anotherProduct)
+            def removed = wishlist.removeProduct(OTHER_PRODUCT_ID)
         then:
             !removed
             wishlist.productIds == Arrays.asList(PRODUCT_ID)
+    }
+
+    def "should return true when wishlist contains product"() {
+        given:
+            def wishlist = new Wishlist(CUSTOMER_ID)
+            wishlist.addProduct(PRODUCT_ID)
+
+        expect:
+            wishlist.containsProduct(PRODUCT_ID)
+    }
+
+    def "should return false when wishlist does not contain product"() {
+        given:
+            def wishlist = new Wishlist(CUSTOMER_ID)
+            wishlist.addProduct(PRODUCT_ID)
+
+        expect:
+            !wishlist.containsProduct(OTHER_PRODUCT_ID)
     }
 
 }

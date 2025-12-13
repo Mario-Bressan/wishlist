@@ -45,4 +45,9 @@ public class Wishlist {
         return List.copyOf(productIds);
     }
 
+    public boolean containsProduct(String productId) {
+        return productIds.contains(productId);
+    }
+
+
 }
