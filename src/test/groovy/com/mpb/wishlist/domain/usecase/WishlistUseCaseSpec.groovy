@@ -6,11 +6,11 @@ import com.mpb.wishlist.exception.WishlistNotFoundException
 import spock.lang.Specification
 import spock.lang.Subject
 
-class WishlistUseCaseSpec extends Specification {
+import static com.mpb.wishlist.support.WishlistTestConstants.CUSTOMER_ID
+import static com.mpb.wishlist.support.WishlistTestConstants.OTHER_PRODUCT_ID
+import static com.mpb.wishlist.support.WishlistTestConstants.PRODUCT_ID
 
-    private static final String CUSTOMER_ID = "customer-1"
-    private static final String PRODUCT_ID = "product-1"
-    private static final String OTHER_PRODUCT_ID = "product-2"
+class WishlistUseCaseSpec extends Specification {
 
     WishlistRepository wishlistRepository = Mock()
 
@@ -85,67 +85,28 @@ class WishlistUseCaseSpec extends Specification {
             thrown(WishlistNotFoundException)
     }
 
-    def "should list products for existing wishlist"() {
+    def "should get existing wishlist"() {
         given:
             def wishlist = new Wishlist(CUSTOMER_ID)
             wishlist.addProduct(PRODUCT_ID)
-            wishlist.addProduct(OTHER_PRODUCT_ID)
 
         when:
-            def result = useCase.listProducts(CUSTOMER_ID)
+            def result = useCase.getWishlist(CUSTOMER_ID)
 
         then:
             1 * wishlistRepository.findByCustomerId(CUSTOMER_ID) >> Optional.of(wishlist)
 
-            result.size() == 2
+            result.customerId == CUSTOMER_ID
+            result.productIds == [PRODUCT_ID]
     }
 
-    def "should throw WishlistNotFoundException when listing products for non existing wishlist"() {
+    def "should throw WishlistNotFoundException when getting non existing wishlist"() {
         when:
-            useCase.listProducts(CUSTOMER_ID)
+            useCase.getWishlist(CUSTOMER_ID)
 
         then:
             1 * wishlistRepository.findByCustomerId(CUSTOMER_ID) >> Optional.empty()
 
             thrown(WishlistNotFoundException)
     }
-
-    def "should return true when wishlist contains product"() {
-        given:
-            def wishlist = new Wishlist(CUSTOMER_ID)
-            wishlist.addProduct(PRODUCT_ID)
-
-        when:
-            def result = useCase.containsProduct(new WishlistItemInput(CUSTOMER_ID, PRODUCT_ID))
-
-        then:
-            1 * wishlistRepository.findByCustomerId(CUSTOMER_ID) >> Optional.of(wishlist)
-
-            result
-    }
-
-    def "should return false when wishlist does not contain product"() {
-        given:
-            def wishlist = new Wishlist(CUSTOMER_ID)
-            wishlist.addProduct(OTHER_PRODUCT_ID)
-
-        when:
-            def result = useCase.containsProduct(new WishlistItemInput(CUSTOMER_ID, PRODUCT_ID))
-
-        then:
-            1 * wishlistRepository.findByCustomerId(CUSTOMER_ID) >> Optional.of(wishlist)
-
-            !result
-    }
-
-    def "should throw WishlistNotFoundException when checking containsProduct for non existing wishlist"() {
-        when:
-            useCase.containsProduct(new WishlistItemInput(CUSTOMER_ID, PRODUCT_ID))
-
-        then:
-            1 * wishlistRepository.findByCustomerId(CUSTOMER_ID) >> Optional.empty()
-
-            thrown(WishlistNotFoundException)
-    }
-
 }

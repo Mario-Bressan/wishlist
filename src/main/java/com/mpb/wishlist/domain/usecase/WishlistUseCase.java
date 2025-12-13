@@ -5,8 +5,6 @@ import com.mpb.wishlist.domain.port.WishlistRepository;
 import com.mpb.wishlist.exception.WishlistNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 public class WishlistUseCase {
 
@@ -33,14 +31,8 @@ public class WishlistUseCase {
         return wishlist;
     }
 
-    public List<String> listProducts(String customerId) {
-        Wishlist wishlist = loadOrThrow(customerId);
-        return wishlist.getProductIds();
-    }
-
-    public boolean containsProduct(WishlistItemInput input) {
-        Wishlist wishlist = loadOrThrow(input.customerId());
-        return wishlist.getProductIds().contains(input.productId());
+    public Wishlist getWishlist(String customerId) {
+        return loadOrThrow(customerId);
     }
 
     private Wishlist loadOrThrow(String customerId) {
