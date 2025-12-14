@@ -1,0 +1,22 @@
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: wishlist-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  wishlist-api:
+    build: .
+    container_name: wishlist-api
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/wishlist
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:
