@@ -1,9 +1,14 @@
 package com.mpb.wishlist.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -13,8 +18,22 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Wishlist API")
-                        .description("Wishlist service for e-commerce customers.")
-                        .version("v1.0.0")
-                );
+                        .description("""
+                                Simple Wishlist service for an e-commerce scenario.
+                                Designed to run as an independent microservice.
+                                """)
+                        .version("1.0.0")
+                        .contact(new Contact()
+                                .name("Mario Bressan")
+                                .email("mario.bressan@hotmail.com"))
+                        .license(new License()
+                                .name("MIT")
+                                .url("https://opensource.org/licenses/MIT"))
+                )
+                .servers(List.of(
+                        new Server()
+                                .url("http://localhost:8080")
+                                .description("Local dev")
+                ));
     }
 }
