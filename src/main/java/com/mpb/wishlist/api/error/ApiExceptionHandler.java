@@ -2,6 +2,7 @@ package com.mpb.wishlist.api.error;
 
 import com.mpb.wishlist.exception.LimitExceededException;
 import com.mpb.wishlist.exception.WishlistNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,33 +30,46 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleBodyValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-
-        log.warn("Validation error - {}", message);
         return buildError(ErrorCode.VALIDATION_ERROR, message);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleParamsValidation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(v -> lastPath(v.getPropertyPath().toString()) + ": " + v.getMessage())
+                .collect(Collectors.joining("; "));
+        return buildError(ErrorCode.VALIDATION_ERROR, message);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildError(ErrorCode.VALIDATION_ERROR, ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unhandled exception - {}", ex.getMessage(), ex);
+        log.error("Unhandled exception", ex);
         return buildError(ErrorCode.INTERNAL_ERROR, null);
+    }
+
+    private static String lastPath(String path) {
+        int idx = path.lastIndexOf('.');
+        return (idx >= 0) ? path.substring(idx + 1) : path;
     }
 
     private ResponseEntity<ErrorResponse> buildError(ErrorCode code, String exceptionMessage) {
         HttpStatus status = code.getStatus();
         String message = exceptionMessage != null ? exceptionMessage : code.getDefaultMessage();
 
-        ErrorResponse body = new ErrorResponse(
+        return ResponseEntity.status(status).body(new ErrorResponse(
                 Instant.now(),
                 status.value(),
                 code.getCode(),
                 message
-        );
-
-        return ResponseEntity.status(status).body(body);
+        ));
     }
-
 }

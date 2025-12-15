@@ -7,47 +7,47 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mpb.wishlist.domain.validation.WishlistValidator.requireCustomerId;
+import static com.mpb.wishlist.domain.validation.WishlistValidator.requireProductId;
+
 @Getter
 @EqualsAndHashCode(of = "customerId")
 public class Wishlist {
 
-    private static final int MAX_ITEMS = 20;
+    private static final int MAX_PRODUCTS = 20;
 
     private final String customerId;
-
     private final List<String> productIds = new ArrayList<>();
 
     public Wishlist(String customerId) {
-        this.customerId = customerId;
+        this.customerId = requireCustomerId(customerId);
     }
 
     public boolean addProduct(String productId) {
-        if (productId == null || productId.isEmpty()) {
-            throw new IllegalArgumentException("productId cannot be null or empty");
-        }
+        productId = requireProductId(productId);
 
         if (productIds.contains(productId)) {
             return false;
         }
 
-        if (productIds.size() >= MAX_ITEMS) {
-            throw new LimitExceededException(this.customerId, MAX_ITEMS);
+        if (productIds.size() >= MAX_PRODUCTS) {
+            throw new LimitExceededException(this.customerId, MAX_PRODUCTS);
         }
 
         return productIds.add(productId);
     }
 
     public boolean removeProduct(String productId) {
+        productId = requireProductId(productId);
         return productIds.remove(productId);
+    }
+
+    public boolean containsProduct(String productId) {
+        productId = requireProductId(productId);
+        return productIds.contains(productId);
     }
 
     public List<String> getProductIds() {
         return List.copyOf(productIds);
     }
-
-    public boolean containsProduct(String productId) {
-        return productIds.contains(productId);
-    }
-
-
 }
